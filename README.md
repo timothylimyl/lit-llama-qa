@@ -4,7 +4,7 @@
 
 # ⚡ Purpose of Lit-LLaMA-QA ⚡
 
-Experimenting with fine-tuning Generative Pre-trained Model (GPT) by using NLP academic dataset for evaluation to get better intuition and knowledge on how to best fine-tune GPT models and understand GPT model's performance before training it for abstractive tasks that requires human evaluation.
+Experimenting with fine-tuning Generative Pre-trained (GPT) Model using NLP academic dataset for evaluation to get better intuition and knowledge on how best to fine-tune GPT models and understand GPT model's performance.
 
 **Goal 1: By using academic dataset, we can get some intuition on how to improve fine-tuning and understand what works.** For example, to answer questions such as "Does LoRA really work?" is very difficult with generative responses as human evaluation is challenging and time-consuming. We want to get grounded feedback on the proposed training methodology. Thus, we will rely on using academic dataset first to get some intuition on practices to follow.
 
@@ -30,11 +30,11 @@ Exact match and F1 score
 
 Experiments is done without tweaking parameters. Results are provided without "bell or whistle", we have not done anything extra to boost the results such as ensembling (generation/model), probability thresholding on unanswerable, etc.
 
-Evaluation is done via [official evaluation script](https://worksheets.codalab.org/rest/bundles/0x6b567e1cf2e041ec80d7098f031c5c9e/contents/blob/).
+- Evaluation is done via [official evaluation script](https://worksheets.codalab.org/rest/bundles/0x6b567e1cf2e041ec80d7098f031c5c9e/contents/blob/).
 
-Model: [LLaMA](https://arxiv.org/pdf/2302.13971.pdf) 7B with context length of 512 (float16) unless stated otherwise.
+- Model: [LLaMA](https://arxiv.org/pdf/2302.13971.pdf) 7B with context length of 512 (float16) unless stated otherwise.
 
-For instructions to set up fine-tuning and replicating our experiment for SQuAD 2.0 dataset, view [`setup_squad.md`](setup_squad.md).
+- For instructions to set up fine-tuning and replicating our experiment for SQuAD 2.0 dataset, view [`setup_squad.md`](setup_squad.md).
 
 ### Experiment 1: LoRA (Rank 8)
 
@@ -54,7 +54,7 @@ For instructions to set up fine-tuning and replicating our experiment for SQuAD 
 }
 ```
 
-2. Using argmax
+2. Using argmax, temp = 1
 
 ```
 {
@@ -154,13 +154,15 @@ Model that was specifically developed / more suitable (architecture,ablations st
 
 2. LoRA and full-finetuning results achieved can be competitive with SOTA models built for specific tasks.
 
-3. Full fine-tuning results is proven to be better than LoRA for small language model. [LoRA paper](https://arxiv.org/pdf/2106.09685.pdf) claims: "LoRA performs on-par or better than fine-tuning in model quality on RoBERTa, DeBERTa, GPT-2, and GPT-3, despite having fewer trainable parameters". This claim may not translate too well to smaller models as per our experiment. We need to determine whether is the tradeoff of performance versus training cost and time worth it.
+3. Full fine-tuning results is proven to be better than LoRA for small language model. [LoRA paper](https://arxiv.org/pdf/2106.09685.pdf) claims: "LoRA performs on-par or better than fine-tuning in model quality on RoBERTa, DeBERTa, GPT-2, and GPT-3, despite having fewer trainable parameters". This claim may not translate too well to smaller models as per our experiment.
 
-4. We also should take note of hardware constraint. Given models above 7B params, full finetuning may not be feasible for most people due to GPU VRAM requirement.
+4. However, LoRA requires way lesser training time and computation. We need to determine whether is the tradeoff of performance versus training cost and time worth it.
 
-5. GPT results is amazing considering that GPT models (decoder-only) task is to generate the next token which is not suitable for extractive QA when compared to BERT based model (encoder-only) that can directly classify the start and end token of the context.
+5. We also should take note of hardware constraint. Given models above 7B params, full finetuning may not be feasible for most people due to GPU VRAM requirement.
 
-6. Fine-tuning GPT models is easy to set up and loss converges pretty fast. Most experiments took just a few hours to 2 days to achieve its lowest validation loss. **For example, fine-tuning the 30B Model using LoRa on 2x80GB A100 (DDP) only took us approximately 5 hours to reach the lowest validation loss.**
+6. GPT results is amazing considering that GPT models (decoder-only) task is to generate the next token which is not suitable for extractive QA when compared to BERT based model (encoder-only) that can directly classify the start and end token of the context.
+
+7. Fine-tuning GPT models is easy to set up and loss converges pretty fast. Most experiments took just a few hours to 2 days to achieve its lowest validation loss. **For example, fine-tuning the 30B Model using LoRa on 2x80GB A100 (DDP) only took us approximately 5 hours to reach the lowest validation loss.**
 
 # Future Work
 
