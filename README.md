@@ -1,6 +1,7 @@
 <div align="center">
 <img src="https://pl-public-data.s3.amazonaws.com/assets_lightning/Lit_LLaMA_Badge3x.png" alt="Lit-LLaMA" width="128"/>
 </div>
+
 # ⚡ Purpose of Lit-LLaMA-QA ⚡
 
 Experimenting with fine-tuning Generative Pre-trained Model (GPT) by using NLP academic dataset for evaluation to get better intuition and knowledge on how to best fine-tune GPT models and understand GPT model's performance before training it for abstractive tasks that requires human evaluation.
