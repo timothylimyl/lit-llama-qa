@@ -92,7 +92,7 @@ def main(
     encoded = tokenizer.encode(prompt, bos=True, eos=False, device=model.device)
 
     t0 = time.perf_counter()
-    output = generate(
+    output, _ = generate(
         model,
         idx=encoded,
         max_seq_length=max_new_tokens,
