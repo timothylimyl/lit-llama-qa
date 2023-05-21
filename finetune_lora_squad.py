@@ -232,40 +232,6 @@ def validate_all_data(fabric: L.Fabric, model: torch.nn.Module, val_data: np.nda
     model.train()
     return losses.mean().item()
 
-@torch.no_grad()
-def validate_qa(fabric: L.Fabric, model: torch.nn.Module, val_data: np.ndarray, logger) -> torch.Tensor:
-    fabric.print("Validating ...")
-    model.eval()
-    losses = torch.zeros(eval_iters)
-    for k in range(eval_iters):
-        input_ids, targets = get_batch(fabric, val_data)
-        logits = model(input_ids)
-        loss = loss_fn(logits, targets)
-        losses[k] = loss.item()
-    out = losses.mean()
-    # Validate and see an actual output
-    # tokenizer = Tokenizer("checkpoints/lit-llama/tokenizer.model")
-    # if fabric.global_rank ==0:
-    #     # ix = np.random.randint(0,len(val_data))
-    #     ixes = range(0,11000,2500) # setting a standard number to compare outputs as loss goes down
-    #     for ix in ixes:
-    #         input_ids = fabric.to_device(val_data[ix]["input_ids_no_response"].type(torch.int64).pin_memory())
-    #         output = generate(
-    #             model,
-    #             idx=input_ids,
-    #             max_seq_length=max_seq_length,
-    #             max_new_tokens=50,
-    #             eos_id=tokenizer.eos_id
-    #         )
-    #         output = tokenizer.decode(output)
-    #         # fabric.print(output)
-    #         # fabric.print(f"\n\nGround truth answer: {val_data[ix]['answer']}\n\n")
-    #         logger.info(f"{output}\nGround truth answer: {val_data[ix]['answer']}\n\n")
-    #     logger.info(3*"\n------------------------------------------\n")
-    model.train()
-    return out.item()
-
-
 def loss_fn(logits, targets):
     # shift the targets such that output n predicts token n+1
     logits = logits[..., :-1, :].contiguous()
