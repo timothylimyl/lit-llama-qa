@@ -1,5 +1,7 @@
 # Steps to finetune GPT model on SQuAD 2.0
 
+\*Only works for LoRA and Full finetuning
+
 ## Step 1: Setup the repo
 
 Clone the repo
@@ -19,11 +21,19 @@ Refer to [the guide](howto/download_weights.md) to download and convert the weig
 
 ## Step 2: Prepare the data
 
-\*You can skip Step 2a and 2b as the SQuAD 2.0 data has already been converted and uploaded in this repo.
+Step 2a - The raw SQuAD 2.0 data can be found at `generation_qa/squad2.0` namely `train-v2.0.json` and `dev-v2.0.json`. Run:
 
-Step 2a - The raw SQuAD 2.0 data can be found at `generation_qa/squad2.0`. We ran `python3 convert_format.py` to get the data in the format we want: `squad_data_dev.jsonl` and `squad_data_train.jsonl`. Change the name for train/dev in `Line 5` and `Line 41` accordingly.
+```
+cd generation_qa/squad2.0
+python3 convert_format.py
+```
 
-Step 2b - Move `squad_data_dev.jsonl` and `squad_data_train.jsonl` into `data/squad2.0` into `data/squad2.0`
+Step 2b - Move `squad_data_dev.jsonl` and `squad_data_train.jsonl` into `data/squad2.0`
+
+```
+cd ../..  #go back to main folder
+cp generation_qa/squad2.0/squad_data_*.jsonl data/squad2
+```
 
 Step 2c - Run `python3 scripts/prepare_squad.py` to get our training and dev data in the form of `train.pt` and test.pt`. It will also generate two plots (I have already uploaded it for preview).
 
