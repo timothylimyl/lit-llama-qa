@@ -1,187 +1,180 @@
 <div align="center">
 <img src="https://pl-public-data.s3.amazonaws.com/assets_lightning/Lit_LLaMA_Badge3x.png" alt="Lit-LLaMA" width="128"/>
+# ⚡ Purpose of Lit-LLaMA-QA ⚡
 
-# ⚡ Lit-LLaMA ️
+Experimenting with fine-tuning Generative Pre-trained Model (GPT) by using NLP academic dataset for evaluation to get better intuition and knowledge on how to best fine-tune GPT models and understand GPT model's performance before training it for abstractive tasks that requires human evaluation.
 
-<!--
-<p align="center">
-  <a href="https://www.lightning.ai/">Lightning.ai</a> •
-  <a href="https://lightning.ai/docs/pytorch/stable/">PyTorch Lightning</a> •
-  <a href="https://lightning.ai/docs/fabric/stable/">Fabric</a>
-</p>
--->
+**Goal 1: By using academic dataset, we can get some intuition on how to improve fine-tuning and understand what works.** For example, to answer questions such as "Does LoRA really work?" is very difficult with generative responses as human evaluation is challenging and time-consuming. We want to get grounded feedback on the proposed training methodology. Thus, we will rely on using academic dataset first to get some intuition on practices to follow.
 
-![cpu-tests](https://github.com/lightning-AI/lit-llama/actions/workflows/cpu-tests.yml/badge.svg) [![Build Status](https://dev.azure.com/Lightning-AI/lit%20Models/_apis/build/status%2FLightning-AI.lit-LLaMA?branchName=main)](https://dev.azure.com/Lightning-AI/lit%20Models/_build/latest?definitionId=49&branchName=main) [![license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/Lightning-AI/lit-llama/blob/master/LICENSE) [![Discord](https://img.shields.io/discord/1077906959069626439?style=plastic)](https://discord.gg/VptPCZkGNa)
+**Goal 2: To gauge how performant are GPT models, especially under PeFT methods**. With academic dataset, we at least have some baseline results while experimenting with different methods. We are also curious on how easy would it be to reach SOTA results.
 
-<img src="https://pl-public-data.s3.amazonaws.com/assets_lightning/Llama_pineapple.gif" alt="Lit-LLaMA and pineapple pizza" width="500px"/>
+We are focusing on QA dataset first as the future goal is to train abstractive qa with dialogue based replies (hard to evaluate, no standard benchmark for this). To start off, our targeted dataset will be SQuAD 2.0 which is an extractive dataset with unanswerable questions.
 
-</div>
+Please jump to [Current takeaways from experiments](#current-takeaways-from-experiments) for some of our learnings from experimenting with GPT models.
 
-# ⚡ Lit-LLaMA ️
-Independent implementation of [LLaMA](<https://github.com/facebookresearch/llama>) that is fully open source under the **Apache 2.0 license.**
+## SQuAD 2.0
 
-This implementation builds on [nanoGPT](<https://github.com/karpathy/nanoGPT>).
+(A) Dataset detail
 
-The original LLaMA weights are distributed by Meta under a [research-only license](https://github.com/facebookresearch/llama/blob/main/MODEL_CARD.md#model-details).
+Stanford Question Answering Dataset (SQuAD) is a reading comprehension dataset, consisting of questions posed by crowdworkers on a set of Wikipedia articles, where the answer to every question is a segment of text, or span, from the corresponding reading passage, or the question might be unanswerable [SQuAD 2.0 reference](https://arxiv.org/pdf/1806.03822.pdf).
 
-New Apache 2.0 licensed weights are being released as part of the [Open LLaMA project](https://github.com/openlm-research/open_llama). Both can be [loaded in Lit-LLaMA](howto/download_weights.md).
+Dataset consist of 150,000 and 50,000 unanswerable questions written adversarially by crowdworkers to look similar to answerable ones. Dev dataset and official evaluation script is provided for evaluation.
 
-## Why?
+(B) Metric
 
-We believe that AI should be fully open source and part of the collective knowledge.
+Exact match and F1 score
 
-The original [LLaMA code](https://github.com/facebookresearch/llama) is [GPL licensed](https://github.com/facebookresearch/llama/blob/main/LICENSE) which means any project using it must also be released under GPL.
+## Experiments
 
-This "taints" any other code and prevents integration with the rest of the ecosystem.
+Experiments is done without tweaking parameters. Results are provided without "bell or whistle", we have not done anything extra to boost the results such as ensembling (generation/model), probability thresholding on unanswerable, etc.
 
-**Lit-LLaMA solves that for good.**
+Evaluation is done via [official evaluation script](https://worksheets.codalab.org/rest/bundles/0x6b567e1cf2e041ec80d7098f031c5c9e/contents/blob/).
 
-&nbsp;
+Model: [LLaMA](https://arxiv.org/pdf/2302.13971.pdf) 7B with context length of 512 (float16) unless stated otherwise.
 
-## Design principles
-**Lit-LLaMA** is:
+For instructions to set up fine-tuning and replicating our experiment for SQuAD 2.0 dataset, view [`setup_squad.md`](setup_squad.md).
 
-- **Simple:** Single-file implementation without boilerplate.
-- **Correct:** Numerically equivalent to the original model.
-- **Optimized:** Runs on consumer hardware or at scale.
-- **Open-source:** No strings attached.
+### Experiment 1: LoRA (Rank 8)
 
-## Get involved!
-[Join our Discord](https://discord.gg/VptPCZkGNa) to build high-performance, truly open-source models for the common benefit of the community.
+1. Using multinomial, temp = 1
 
-&nbsp;
-
-## Setup
-
-Clone the repo
-
-```bash
-git clone https://github.com/Lightning-AI/lit-llama
-cd lit-llama
+```
+{
+  "exact": 79.58392992504001,
+  "f1": 84.2160752961748,
+  "total": 11873,
+  "HasAns_exact": 75.37112010796221,
+  "HasAns_f1": 84.64869466792929,
+  "HasAns_total": 5928,
+  "NoAns_exact": 83.78469301934399,
+  "NoAns_f1": 83.78469301934399,
+  "NoAns_total": 5945
+}
 ```
 
-install dependencies
+2. Using argmax
 
-```bash
-pip install -r requirements.txt
+```
+{
+  "exact": 83.2729722900699,
+  "f1": 86.67488213657204,
+  "total": 11873,
+  "HasAns_exact": 81.08974358974359,
+  "HasAns_f1": 87.90331909708533,
+  "HasAns_total": 5928,
+  "NoAns_exact": 85.44995794785534,
+  "NoAns_f1": 85.44995794785534,
+  "NoAns_total": 5945
+}
 ```
 
-You are all set! 🎉
+We have tested for a few weights and argmax performance is always superior which is expected as this is an extractive task (answer is found in context). **All generation for extractive QA will be done via argmax.**
 
-&nbsp;
+### Experiment 2: Full-finetuning
 
-## Use the model
-
-To generate text predictions, you need to download the model weights. **If you don't have them, check out our [guide](howto/download_weights.md).**
-
-Run inference:
-
-```bash
-python generate.py --prompt "Hello, my name is"
+```
+{
+  "exact": 84.85639686684073,
+  "f1": 88.12948928646375,
+  "total": 11873,
+  "HasAns_exact": 80.41497975708502,
+  "HasAns_f1": 86.9705509949707,
+  "HasAns_total": 5928,
+  "NoAns_exact": 89.28511354079058,
+  "NoAns_f1": 89.28511354079058,
+  "NoAns_total": 5945
+}
 ```
 
-This will run the 7B model and require ~26 GB of GPU memory (A100 GPU).
+Note: Got room for improvement in training, our validation interval to save checkpoint was set too big due to storage concern as each weight saved is 14GB (7B model). It ended up with only the very first checkpoint being saved as all validation loss after the first validation interval was higher.
 
-[Full guide for generating samples from the model](howto/inference.md).
+### Experiment 3: LoRa (Rank 8) - 30B
 
-### Run Lit-LLaMA on consumer devices
-
-On GPUs with `bfloat16` support, the `generate.py` script will automatically convert the weights and consume about ~14 GB.
-For GPUs with less memory, or ones that don't support `bfloat16`, enable quantization (`--quantize llm.int8`):
-
-```bash
-python generate.py --quantize llm.int8 --prompt "Hello, my name is"
+```
+{
+  "exact": 87.56843257811842,
+  "f1": 90.14054761949711,
+  "total": 11873,
+  "HasAns_exact": 82.86099865047234,
+  "HasAns_f1": 88.01260490659415,
+  "HasAns_total": 5928,
+  "NoAns_exact": 92.26240538267452,
+  "NoAns_f1": 92.26240538267452,
+  "NoAns_total": 5945
+}
 ```
 
-See `python generate.py --help` for more options.
+### Hardware Requirement
 
-You can also use GPTQ-style int4 quantization, but this needs conversions of the weights first:
+Tested with micro batch size of 1 and batch size of 128 using Gradient Accumulation.
 
-```bash
-python quantize.py --checkpoint_path lit-llama.pth --tokenizer_path tokenizer.model --output_path llama-7b-gptq.4bit.pth --dtype bfloat16  --quantize gptq.int4
-```
+1. LLaMA 7B with context length of 512
 
-With the generated quantized checkpoint generation works as usual with `--quantize gptq.int4`, bringing GPU usage to about ~5GB. As only the weights of the Linear layers are quantized, it is useful to use `--dtype bfloat16` even with the quantization enabled.
+- LoRA: ~20GB
+- Full-finetuning (FSDP): ~80GB (Single GPU, 80GB A100) but does not work on ~88GB (4x GPU, 22GB A5000)
 
-[Full guide for generating samples from the model](howto/inference.md).
+2. LLaMA 13B with context length of 512
 
-## Finetune the model
+- LoRA: ~40GB
 
-We provide a simple training scripts in `finetune_lora.py` and `finetune_adapter.py` that instruction-tunes a pretrained model on the [Alpaca](https://github.com/tatsu-lab/stanford_alpaca) dataset using the techniques of [LoRA](https://arxiv.org/abs/2106.09685) and [Adapter](https://arxiv.org/abs/2303.16199).
+3. LLaMA 30B with context length of 512
 
-1. Download the data and generate a instruction tuning dataset:
+- LoRA: ~75GB
 
-   ```bash
-   python scripts/prepare_alpaca.py
-   ```
+## Academic Paper Results and comparison (SQuAD 2.0)
 
-2. Run the finetuning script
+For comparison, we should only compare to the best research out there to get some idea on how good is the performance of fine-tuning llama. Comparison made is for the dev set (as per paper and our own experiment)
 
-   ```bash
-   python finetune_lora.py
-   ```
-   or 
-   ```bash
-   python finetune_adapter.py
-   ```
+| Model                                                          | F1    | Reference     |
+| -------------------------------------------------------------- | ----- | ------------- |
+| Ours (7B)                                                      | 88.13 | Full-finetune |
+| Ours (30B)                                                     | 90.14 | LoRA          |
+| [FLAN 137B](https://arxiv.org/pdf/2109.01652.pdf)              | 43.1  | 3-shot        |
+| [GPT-3](https://arxiv.org/pdf/2005.14165.pdf)                  | 69.8  | 16-shot       |
+| [BERT](https://arxiv.org/pdf/1810.04805.pdf)                   | 83.1  | Supervised    |
+| [Retrospective Reader](https://arxiv.org/pdf/2001.09694v4.pdf) | 91.3  | Supervised    |
+| [DeBERTa](https://openreview.net/pdf?id=XPZIaotutsD) (large)   | 90.7  | Supervised    |
+| [DeBERTa](https://openreview.net/pdf?id=XPZIaotutsD) (base)    | 86.2  | Supervised    |
+| [DeBERTa V3](https://arxiv.org/pdf/2111.09543.pdf)             | 91.16 | Supervised    |
 
-It is expected that you have downloaded the pretrained weights as described above.
-The finetuning requires at least one GPU with ~24 GB memory (GTX 3090). Follow the instructions in the script to efficiently fit your GPU memory.
-Note: For some GPU models you might need to set `torch.backends.cuda.enable_flash_sdp(False)` (see comments at the top of the script).
+DeBERTa V3 paper claims is that F1 score is 91.5. However, **current best on dev set [verified by paperswithcode](https://paperswithcode.com/sota/question-answering-on-squad-v2)** is `deepset/deberta-v3-large-squad2` with F1: 91.16. However, the official eval script (the one we are using) gives a slightly lower result on their model, [refer to Hugging Face repo](https://huggingface.co/deepset/deberta-v3-large-squad2).
 
-More details about each finetuning method and how you can apply it to your own data can be found in our technical how-to guides.
+Model that was specifically developed / more suitable (architecture,ablations studies) for the task of extractive QA (ex: SQuAD 2.0):
 
-### Finetuning How-To Guides
+1. BERT
+2. Retro-Reader
+3. DeBERTa
+4. DeBERTa V3
 
-These technical tutorials illustrate how to run the finetuning code.
+# Current takeaways from experiments
 
-- [Finetune with LoRA](howto/finetune_lora.md)
-- [Finetune with Adapters](howto/finetune_adapter.md)
+1. Fine-tuning small LM models on consumer GPU is possible via LoRA.
 
-### Understanding Finetuning -- Conceptual Tutorials
+2. LoRA and full-finetuning results achieved can be competitive with SOTA models built for specific tasks.
 
-Looking for conceptual tutorials and explanations? We have some additional articles below:
+3. Full fine-tuning results is proven to be better than LoRA for small language model. [LoRA paper](https://arxiv.org/pdf/2106.09685.pdf) claims: "LoRA performs on-par or better than fine-tuning in model quality on RoBERTa, DeBERTa, GPT-2, and GPT-3, despite having fewer trainable parameters". This claim may not translate too well to smaller models as per our experiment. We need to determine whether is the tradeoff of performance versus training cost and time worth it.
 
-- [Understanding Parameter-Efficient Finetuning of Large Language Models: From Prefix Tuning to LLaMA-Adapters](https://lightning.ai/pages/community/article/understanding-llama-adapters/)
+4. We also should take note of hardware constraint. Given models above 7B params, full finetuning may not be feasible for most people due to GPU VRAM requirement.
 
-## Pre-training
+5. GPT results is amazing considering that GPT models (decoder-only) task is to generate the next token which is not suitable for extractive QA when compared to BERT based model (encoder-only) that can directly classify the start and end token of the context.
 
-We provide a simple training script based on Fabric if you want to venture into pre-training on RedPajama, a reproduction of the original LLaMA dataset.
-Conversion scripts for our optimized streaming `PackedDataset` are included.
+6. Fine-tuning GPT models is easy to set up and loss converges pretty fast. Most experiments took just a few hours to 2 days to achieve its lowest validation loss. **For example, fine-tuning the 30B Model using LoRa on 2x80GB A100 (DDP) only took us approximately 5 hours to reach the lowest validation loss.**
 
-Follow this guide to start pre-training on the RedPajama dataset:
+# Future Work
 
-- [Pretrain on RedPajama](howto/train_redpajama.md)
+1. Finetune for abstractive question and answering under the context length of 2048. This model will be more suitable for real world application.
 
-## Get involved!
+If time permits:
 
-We are on a quest towards fully open source AI.
+2. Try bigger language models
 
-<img align="right" src="https://pl-public-data.s3.amazonaws.com/assets_lightning/Lit_LLaMA_Illustration3x.png" alt="Lit-LLaMA" width="128"/>
+- Experiments with the 13B, 30B, 65B variant
 
-Join us and start contributing, especially on the following areas:
+3. Experiment with more PeFT techniques
 
-- [ ] [Pre-training](https://github.com/Lightning-AI/lit-llama/labels/pre-training)
-- [ ] [Fine-tuning (full and LoRA)](https://github.com/Lightning-AI/lit-llama/labels/fine-tuning)
-- [ ] [Quantization](https://github.com/Lightning-AI/lit-llama/labels/quantization)
-- [ ] [Sparsification](https://github.com/Lightning-AI/lit-llama/labels/sparsification)
+- LoRa with different rank
+- Prefix-tuning
+- Adapters
+- Joining up the ideas (LoRA + Adapter + Prefix-tuning)
 
-Look at `train.py` for a starting point towards pre-training / fine-tuning using [Lightning Fabric](https://lightning.ai/docs/fabric/stable/).
-
-We welcome all individual contributors, regardless of their level of experience or hardware. Your contributions are valuable, and we are excited to see what you can accomplish in this collaborative and supportive environment. 
-
-Unsure about contributing? Check out our [Contributing to Lit-LLaMA: A Hitchhiker’s Guide to the Quest for Fully Open-Source AI](https://lightning.ai/pages/community/tutorial/contributing-to-lit-llama-a-hitchhikers-guide-to-the-quest-for-fully-open-source-ai/) guide.
-
-Don't forget to [join our Discord](https://discord.gg/VptPCZkGNa)!
-
-## Acknowledgements
-
-- [@karpathy](https://github.com/karpathy) for [nanoGPT](https://github.com/karpathy/nanoGPT)
-- [@FacebookResearch](https://github.com/facebookresearch) for the original [LLaMA implementation](https://github.com/facebookresearch/llama)
-- [@TimDettmers](https://github.com/TimDettmers) for [bitsandbytes](https://github.com/TimDettmers/bitsandbytes)
-- [@Microsoft](https://github.com/microsoft) for [LoRA](https://github.com/microsoft/LoRA)
-- [@IST-DASLab](https://github.com/IST-DASLab) for [GPTQ](https://github.com/IST-DASLab/gptq)
-
-## License
-
-Lit-LLaMA is released under the [Apache 2.0](https://github.com/Lightning-AI/lightning-llama/blob/main/LICENSE) license.
+4. Fine-tuning the LM directly for Unified QA then evaluation can be done with every QA dataset, [paper inspiration](https://arxiv.org/pdf/2202.12359.pdf).
