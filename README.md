@@ -150,19 +150,17 @@ Model that was specifically developed / more suitable (architecture,ablations st
 
 # Current takeaways from experiments
 
-1. Fine-tuning small LM models on consumer GPU is possible via LoRA.
+1. LoRA and full-finetuning results achieved can be competitive with SOTA models built for specific tasks.
 
-2. LoRA and full-finetuning results achieved can be competitive with SOTA models built for specific tasks.
+2. Full fine-tuning results is proven to be better than LoRA for small language model. [LoRA paper](https://arxiv.org/pdf/2106.09685.pdf) claims: "LoRA performs on-par or better than fine-tuning in model quality on RoBERTa, DeBERTa, GPT-2, and GPT-3, despite having fewer trainable parameters". This claim may not translate too well to smaller models as per our experiment.
 
-3. Full fine-tuning results is proven to be better than LoRA for small language model. [LoRA paper](https://arxiv.org/pdf/2106.09685.pdf) claims: "LoRA performs on-par or better than fine-tuning in model quality on RoBERTa, DeBERTa, GPT-2, and GPT-3, despite having fewer trainable parameters". This claim may not translate too well to smaller models as per our experiment.
+3. However, LoRA requires way lesser training time and computation. You can even finetune a 7B GPT Model with consumer GPUs. Thus, we need to determine whether is the tradeoff of performance versus training cost and time worth it.
 
-4. However, LoRA requires way lesser training time and computation. We need to determine whether is the tradeoff of performance versus training cost and time worth it.
+4. We also should take note of hardware constraint. Given models above 7B params, full finetuning may not be feasible at all for most people due to GPU VRAM requirement.
 
-5. We also should take note of hardware constraint. Given models above 7B params, full finetuning may not be feasible for most people due to GPU VRAM requirement.
+5. GPT results is amazing considering that GPT models (decoder-only) task is to generate the next token which is not suitable for extractive QA when compared to BERT based model (encoder-only) that can directly classify the start and end token of the context.
 
-6. GPT results is amazing considering that GPT models (decoder-only) task is to generate the next token which is not suitable for extractive QA when compared to BERT based model (encoder-only) that can directly classify the start and end token of the context.
-
-7. Fine-tuning GPT models is easy to set up and loss converges pretty fast. Most experiments took just a few hours to 2 days to achieve its lowest validation loss. **For example, fine-tuning the 30B Model using LoRa on 2x80GB A100 (DDP) only took us approximately 5 hours to reach the lowest validation loss.**
+6. Fine-tuning GPT models is easy to set up and loss converges pretty fast. Most experiments took just a few hours to 2 days to achieve its lowest validation loss. **For example, fine-tuning the 30B Model using LoRa on 2x80GB A100 (DDP) only took us approximately 5 hours to reach the lowest validation loss.**
 
 # Future Work
 
