@@ -37,6 +37,8 @@ cp generation_qa/squad2.0/squad_data_*.jsonl data/squad2
 
 Step 2c - Run `python3 scripts/prepare_squad.py` to get our training and dev data in the form of `train.pt` and test.pt`. It will also generate two plots (I have already uploaded it for preview).
 
+Our training and evaluation data can then be found at `data/squad2`.
+
 ## Step 3: Start finetuning
 
 (A) For full finetuning, run `python3 finetune_full_squad.py`
@@ -55,7 +57,7 @@ Note: Rename the location you want the weights to be saved into accordingly. For
 
 Step 4a - To evaluate, run `python3 evaluate_lora_squad.py --lora_path out/lora/squad2/folder-name/iter-weights-that-you-want-to-evaluate.pt`
 
-Once this is running, you will see all the predictions being printed in your terminal.
+Once this is running, you will see all the predictions being printed in your terminal. There are also logs provided in the weights folder.
 
 Step 4b - All predictions will all be saved as `squad_eval_predict_{log_name}.json` file so that we can run the official evaluation script on it. **`log_name` here takes the name of the iteration and loss of the finetuned weights that you used.**
 
@@ -67,7 +69,7 @@ cd generation_qa/squad2.0
 python3 squad_evaluation.py dev-v2.0.json squad_eval_predict_{log_name}.json
 ```
 
-🎉🎉🎉 Finally, you should expect the results to be printed, example of result format:
+🎉🎉🎉 Finally, you should expect the results to be printed, expected result format:
 
 ```
 {
