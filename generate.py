@@ -11,7 +11,7 @@ from lit_llama import LLaMA, Tokenizer
 from lit_llama.utils import EmptyInitOnDevice, lazy_load, llama_model_lookup
 
 
-@torch.no_grad()
+@torch.inference_mode()
 def generate(
     model: torch.nn.Module,
     idx: torch.Tensor,
@@ -20,6 +20,7 @@ def generate(
     temperature: float = 1.0,
     top_k: Optional[int] = None,
     eos_id: Optional[int] = None,
+    argmax = False,
 ) -> torch.Tensor:
     """Takes a conditioning sequence (prompt) as input and continues to generate as many tokens as requested.
 
@@ -40,6 +41,7 @@ def generate(
     empty = torch.empty(T_new, dtype=idx.dtype, device=idx.device)
     empty[:T] = idx
     idx = empty
+    predict_probs = []
 
     # generate max_new_tokens tokens
     for t in range(T, T_new):
@@ -57,17 +59,25 @@ def generate(
             v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
             logits[logits < v[[-1]]] = -float("Inf")
 
-        probs = torch.nn.functional.softmax(logits, dim=-1)
-        idx_next = torch.multinomial(probs, num_samples=1)
+
+        if argmax:
+            probs = torch.nn.functional.softmax(logits, dim=-1)
+            idx_next = torch.argmax(probs)
+            predict_probs.append(probs[idx_next].item())
+        else:
+            probs = torch.nn.functional.softmax(logits, dim=-1)
+            idx_next = torch.multinomial(probs, num_samples=1)
+            predict_probs.append(probs[idx_next].item())
+
 
         # concatenate the new generation
         idx[t] = idx_next
 
         # if <eos> token is triggered, return the output (stop generation)
         if idx_next == eos_id:
-            return idx[:t + 1]  # include the EOS token
+            return idx[:t + 1], sum(predict_probs)/len(predict_probs) # include the EOS token
 
-    return idx
+    return idx, sum(predict_probs)/len(predict_probs)
 
 
 def main(
@@ -77,8 +87,8 @@ def main(
     max_new_tokens: int = 50,
     top_k: int = 200,
     temperature: float = 0.8,
-    checkpoint_path: Path = Path("checkpoints/lit-llama/7B/lit-llama.pth"),
-    tokenizer_path: Path = Path("checkpoints/lit-llama/tokenizer.model"),
+    checkpoint_path: Optional[Path] = None,
+    tokenizer_path: Optional[Path] = None,
     quantize: Optional[str] = None,
 ) -> None:
     """Generates text samples based on a pre-trained LLaMA model and tokenizer.
@@ -96,6 +106,10 @@ def main(
             ``"llm.int8"``: LLM.int8() mode,
             ``"gptq.int4"``: GPTQ 4-bit mode.
     """
+    if not checkpoint_path:
+        checkpoint_path = Path(f"./checkpoints/lit-llama/7B/lit-llama.pth")
+    if not tokenizer_path:
+        tokenizer_path = Path("./checkpoints/lit-llama/tokenizer.model")
     assert checkpoint_path.is_file(), checkpoint_path
     assert tokenizer_path.is_file(), tokenizer_path
 
@@ -119,25 +133,22 @@ def main(
     model = fabric.setup_module(model)
 
     tokenizer = Tokenizer(tokenizer_path)
-    encoded = tokenizer.encode(prompt, bos=True, eos=False, device=fabric.device)
-    prompt_length = encoded.size(0)
+    encoded_prompt = tokenizer.encode(prompt, bos=True, eos=False, device=fabric.device)
 
     L.seed_everything(1234)
     for i in range(num_samples):
         t0 = time.perf_counter()
         y = generate(
             model,
-            encoded,
+            encoded_prompt,
             max_new_tokens,
             model.config.block_size,  # type: ignore[union-attr,arg-type]
             temperature=temperature,
             top_k=top_k,
         )
         t = time.perf_counter() - t0
-
         print(tokenizer.decode(y))
-        tokens_generated = y.size(0) - prompt_length
-        print(f"Time for inference {i + 1}: {t:.02f} sec total, {tokens_generated / t:.02f} tokens/sec", file=sys.stderr)
+        print(f"Time for inference {i + 1}: {t:.02f} sec total, {max_new_tokens / t:.02f} tokens/sec", file=sys.stderr)
     if fabric.device.type == "cuda":
         print(f"Memory used: {torch.cuda.max_memory_reserved() / 1e9:.02f} GB", file=sys.stderr)
 
