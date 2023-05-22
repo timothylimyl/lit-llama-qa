@@ -6,19 +6,17 @@
 
 # ⚡ Purpose of Lit-LLaMA-QA ⚡
 
-Experimenting with fine-tuning Generative Pre-trained (GPT) Model using NLP academic dataset for evaluation to get better intuition and knowledge on how best to fine-tune GPT models and understand GPT model's performance on downstream tasks.
-
 **Goal 1: By using academic dataset, we can get some intuition on how to improve fine-tuning and understand what works.** For example, to answer questions such as "Does LoRA really work?" is very difficult with generative responses as human evaluation is challenging and time-consuming. We want to get grounded feedback on the proposed training methodology. Thus, we will rely on using academic dataset first to get some intuition on practices to follow.
 
 **Goal 2: To gauge how performant are GPT models, especially under PeFT methods**. With academic dataset, we at least have some baseline results while experimenting with different methods. We are also curious on how easy would it be to reach SOTA results.
-
-We are focusing on QA dataset first as the future goal is to train abstractive qa with dialogue based replies (hard to evaluate, no standard benchmark for this). To start off, our targeted dataset will be SQuAD 2.0 which is an extractive dataset with unanswerable questions.
 
 Please jump to [Current takeaways from experiments](#current-takeaways-from-experiments) for some of our learnings from experimenting with GPT models or [Academic Paper Results and comparison (SQuAD 2.0)](#academic-paper-results-and-comparison-squad-20) for our experiment results relative to published SOTA research.
 
 Find the [original lit-llama repository here.](https://github.com/Lightning-AI/lit-llama)
 
 ## SQuAD 2.0
+
+We are focusing on QA dataset first as the future goal is to train abstractive qa with dialogue based replies (hard to evaluate, no standard benchmark for this). To start off, our targeted dataset will be SQuAD 2.0 which is an extractive dataset with unanswerable questions.
 
 (A) Dataset detail
 
@@ -71,7 +69,7 @@ Model that was specifically developed / more suitable (architecture,ablations st
 
 1. How performant is finetuning using LoRA?
 
-- Competitive results on downstream task can be achieved just by using LoRA for finetuning
+- Competitive results on downstream task can be achieved just by using LoRA for finetuning. You can see that the results are fairly close to the best.
 - Finetuned GPT results is amazing considering that GPT models (decoder-only) task is to generate the next token which is not suitable for extractive QA when compared to BERT based model (encoder-only) that can directly classify the start and end token of the context.
 
 2. When to use full finetuning versus LoRA?
