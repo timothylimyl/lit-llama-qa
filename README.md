@@ -14,6 +14,8 @@ We are focusing on QA dataset first as the future goal is to train abstractive q
 
 Please jump to [Current takeaways from experiments](#current-takeaways-from-experiments) for some of our learnings from experimenting with GPT models or [Academic Paper Results and comparison (SQuAD 2.0)](#academic-paper-results-and-comparison-squad-20) for our experiment results relative to published SOTA research.
 
+Find the [original lit-llama repository here.](https://github.com/Lightning-AI/lit-llama)
+
 ## SQuAD 2.0
 
 (A) Dataset detail
@@ -32,7 +34,7 @@ Experiments is done without tweaking parameters. Results are provided without "b
 
 - Evaluation is done via [official evaluation script](https://worksheets.codalab.org/rest/bundles/0x6b567e1cf2e041ec80d7098f031c5c9e/contents/blob/).
 
-- Model: [LLaMA](https://arxiv.org/pdf/2302.13971.pdf) 7B with context length of 512 (float16) unless stated otherwise.
+- Model: [LLaMA](https://arxiv.org/pdf/2302.13971.pdf) 7B with context length of 512 (float16) **unless stated otherwise.**
 
 - For instructions to set up fine-tuning and replicating our experiment for SQuAD 2.0 dataset, view [`setup_squad.md`](setup_squad.md).
 
@@ -71,6 +73,38 @@ Experiments is done without tweaking parameters. Results are provided without "b
 ```
 
 We have tested for a few weights and argmax performance is always superior which is expected as this is an extractive task (answer is found in context). **All generation for extractive QA will be done via argmax.**
+
+3. int8
+
+```
+{
+  "exact": 82.70024425166343,
+  "f1": 86.23343966074528,
+  "total": 11873,
+  "HasAns_exact": 80.8029689608637,
+  "HasAns_f1": 87.8794920870496,
+  "HasAns_total": 5928,
+  "NoAns_exact": 84.59209419680404,
+  "NoAns_f1": 84.59209419680404,
+  "NoAns_total": 5945
+}
+```
+
+4. int4 (GPTQ)
+
+```
+{
+  "exact": 81.31895898256549,
+  "f1": 85.0672091132973,
+  "total": 11873,
+  "HasAns_exact": 79.47031039136303,
+  "HasAns_f1": 86.97755968322865,
+  "HasAns_total": 5928,
+  "NoAns_exact": 83.16232127838519,
+  "NoAns_f1": 83.16232127838519,
+  "NoAns_total": 5945
+}
+```
 
 ### Experiment 2: Full-finetuning
 
@@ -150,15 +184,16 @@ Model that was specifically developed / more suitable (architecture,ablations st
 
 # Current takeaways from experiments
 
-1. Does LoRA really work?
+1. How performant is using LoRA for finetuning?
 
-- Yes, competitive results on downstream task can be achieved just by using LoRA for finetuning
-- Full fine-tuning results is proven to be better than LoRA for small language model. [LoRA paper](https://arxiv.org/pdf/2106.09685.pdf) claims: "LoRA performs on-par or better than fine-tuning in model quality on RoBERTa, DeBERTa, GPT-2, and GPT-3, despite having fewer trainable parameters". This claim may not translate too well to smaller models as per our experiment.
+- Competitive results on downstream task can be achieved just by using LoRA for finetuning
 - Finetuned GPT results is amazing considering that GPT models (decoder-only) task is to generate the next token which is not suitable for extractive QA when compared to BERT based model (encoder-only) that can directly classify the start and end token of the context.
 
 2. When to use full finetuning versus LoRA?
 
-- LoRA requires way lesser training time and computation. You can even finetune a 7B GPT Model with consumer GPUs. Thus, we need to determine whether is the tradeoff of performance versus training cost and time worth it
+-- Full fine-tuning results is proven to be even better than LoRA for small language model. [LoRA paper](https://arxiv.org/pdf/2106.09685.pdf) claims: "LoRA performs on-par or better than fine-tuning in model quality on RoBERTa, DeBERTa, GPT-2, and GPT-3, despite having fewer trainable parameters". This claim may not translate too well to smaller models as per our experiment. However, the degradation of performance is not much.
+
+- However, LoRA requires way lesser training time and computation. You can even finetune a 7B GPT Model with consumer GPUs. Thus, we need to determine whether is the tradeoff of performance versus training cost and time worth it
 - Typically, given models above 7B params, full finetuning may not be feasible at all for most people due to GPU VRAM requirement, you can view the [Hardware Requirement](#hardware-requirement) to get a rough idea of hardware requirement.
 - [Information to be added: Comparison of time taken for loss to converge for full finetuning versus LoRA]
 
@@ -167,15 +202,25 @@ Model that was specifically developed / more suitable (architecture,ablations st
 - Fine-tuning GPT models is easy to set up and loss converges pretty fast. Most experiments took just a few hours to 2 days to achieve its lowest validation loss.
 - **For example, fine-tuning the 30B Model using LoRa on 2x80GB A100 (DDP) only took us approximately 5 hours to reach the lowest validation loss.**
 
-4. How does LoRA rank affect performance?
+4. How does quantisation affect performance?
+
+- Surprisingly, it does not affect much. You can judge the results here [Experiment 1](#experiment-1-lora-rank-8), summary provided below:
+
+<div align="center">
+
+| dtype       |  F1   |    EM |
+| ----------- | :---: | ----: |
+| bfloat16    | 86.67 | 83.27 |
+| int8        | 86.23 | 82.70 |
+| int4 (GPTQ) | 85.07 | 81.32 |
+
+</div>
+
+6. How does LoRA rank affect performance?
 
 - [Information to be added: Rank 16, Rank 32]
 
-5. How does quantisation affect performance?
-
-- [Information to be added: Very curious on whether how much int8 model will degrade performance]
-
-6. What other PeFT methods can be equally efficient and performant as LoRA?
+7. What other PeFT methods can be equally efficient and performant as LoRA?
 
 - [Information to be added:]
 
