@@ -16,7 +16,7 @@ Find the [original lit-llama repository here.](https://github.com/Lightning-AI/l
 
 ## SQuAD 2.0
 
-We are focusing on QA dataset first as the future goal is to train abstractive qa with dialogue based replies (hard to evaluate, no standard benchmark for this). To start off, our targeted dataset will be SQuAD 2.0 which is an extractive dataset with unanswerable questions.
+We are focusing on QA dataset first as the future goal is to train abstractive qa with dialogue based replies (hard to evaluate, no standard benchmark for this). To start off, our first targeted dataset will be SQuAD 2.0.
 
 (A) Dataset detail
 
