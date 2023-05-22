@@ -36,7 +36,7 @@ Experiments is done without tweaking parameters. Results are provided without "b
 
 - Model: [LLaMA](https://arxiv.org/pdf/2302.13971.pdf) 7B with context length of 512 (float16) **unless stated otherwise.**
 
-- For instructions to set up fine-tuning and replicating our experiment for SQuAD 2.0 dataset, view [`setup_squad.md`](setup_squad.md).
+**_For instructions to set up fine-tuning and replicating our experiment for SQuAD 2.0 dataset, view [`setup_squad.md`](setup_squad.md)._**
 
 ### Experiment 1: LoRA (Rank 8)
 
