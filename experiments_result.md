@@ -102,6 +102,22 @@ Note: Got room for improvement in training, our validation interval to save chec
 }
 ```
 
+### Experiment 4: LoRA (Rank 16)
+
+```
+{
+  "exact": 84.14048681883264,
+  "f1": 86.66208107441904,
+  "total": 11873,
+  "HasAns_exact": 75.72537112010797,
+  "HasAns_f1": 80.77579092384913,
+  "HasAns_total": 5928,
+  "NoAns_exact": 92.53153910849453,
+  "NoAns_f1": 92.53153910849453,
+  "NoAns_total": 5945
+}
+```
+
 ### Hardware Requirement
 
 Tested with micro batch size of 1 and batch size of 128 using Gradient Accumulation.
