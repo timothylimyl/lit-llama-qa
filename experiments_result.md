@@ -104,6 +104,7 @@ Note: Got room for improvement in training, our validation interval to save chec
 
 ### Experiment 4: LoRA (Rank 16)
 
+1. Default
 ```
 {
   "exact": 84.14048681883264,
@@ -117,6 +118,22 @@ Note: Got room for improvement in training, our validation interval to save chec
   "NoAns_total": 5945
 }
 ```
+
+2. int8
+```
+{
+  "exact": 84.02257222269014,
+  "f1": 86.69351157220103,
+  "total": 11873,
+  "HasAns_exact": 76.1808367071525,
+  "HasAns_f1": 81.53037498258149,
+  "HasAns_total": 5928,
+  "NoAns_exact": 91.84188393608073,
+  "NoAns_f1": 91.84188393608073,
+  "NoAns_total": 5945
+}
+```
+
 
 ### Hardware Requirement
 
