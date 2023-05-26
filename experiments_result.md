@@ -135,7 +135,9 @@ Note: Got room for improvement in training, our validation interval to save chec
 ```
 
 
-### Hardware Requirement
+## Hardware Requirement
+
+#### Training:
 
 Tested with micro batch size of 1 and batch size of 128 using Gradient Accumulation.
 
@@ -151,3 +153,24 @@ Tested with micro batch size of 1 and batch size of 128 using Gradient Accumulat
 3. LLaMA 30B with context length of 512
 
 - LoRA: ~75GB
+
+
+### Inference:
+
+Fix context length to 2048.
+
+Tested with bfloat16:
+
+- 7B: ~13GB
+- 13B: ~26GB
+- 30B: ~60GB
+- 65B: [Cannot fit into one GPU]
+
+
+Tested with int8:
+
+- 7B: ~6GB
+- 13B: ~15GB
+- 30B: ~35GB
+- 65B: ~69GB
+
